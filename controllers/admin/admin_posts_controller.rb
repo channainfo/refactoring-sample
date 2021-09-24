@@ -49,13 +49,9 @@ class Admin::AdminPostsController < InheritedResources::Base
   end
 
   def destroy
-    post = Post.find(params[:id])
-    post.comment_threads.each do |itm|
-      itm.delete
-    end
-    post.delete
+    destroyer = PostDestroyer.call(params[:id])
     respond_to do |format|
-      format.html { redirect_to admin_posts_path, :flash => { :success => "#{t 'articles.controllers.destroy.flash.success', :name => @post.name}"} }
+      format.html { redirect_to admin_posts_path, :flash => { :success => "#{t 'articles.controllers.destroy.flash.success', :name => destroyer.post.name}"} }
       format.js
     end
   end
