@@ -56,12 +56,13 @@ class Admin::AdminPostsController < InheritedResources::Base
     end
   end
 
+  # PUT posts/upload
   def upload
-    @post = Post.find(params[:id])
-    if @post.update_attributes( :photo => params[:file] )
-      render :json => { 'success' => true, 'url' => "#{@post.photo.url(:middle)}#{@post.photo.updated_at}" }
+    post = Post.find(params[:id])
+    if post.update_attributes( :photo => params[:file] )
+      render :json => { 'success' => true, 'url' => "#{post.photo.url(:middle)}#{post.photo.updated_at}" }
     else
-      render :json => { 'error' => @post.errors }
+      render :json => { 'error' => post.errors }
     end
   end
 
