@@ -1,17 +1,13 @@
 class PostController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found_error
+
   def show
-    @post = Post.active.find_by(slug: params[:slug])
-    @author = @post.author
+    @post = Post.active.find_by!(slug: params[:slug])
 
-    if !@post.present?
-      render "errors/404.html", status: :not_found
-    end
+    # no need to retain so many view var
+    # @author = @post.author
 
-    if @author.inactive?
-      redirect_to posts_path
-    end
-
-    render :show
+    redirect_to posts_path if @post.author.inactive?
   end
 
   def index
@@ -63,5 +59,10 @@ class PostController < ApplicationController
 
   def get_categories
     Category.visible.all
+  end
+
+  private
+  def not_found_error
+    render "errors/404.html", status: :not_found
   end
 end
