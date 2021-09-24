@@ -66,18 +66,20 @@ class Admin::AdminPostsController < InheritedResources::Base
     end
   end
 
+  # DELETE admin/posts/remove
   def remove
     Post.find(params[:id]).update_attributes( :photo => nil )
     render :text => nil
   end
 
+  # DELETE admin/posts/flush
   def flush
-    params[:items].each do |itm|
-      Post.find(itm).destroy
-    end
+    # avoid callback and much sql is much faster
+    Post.find(params[:items]).delete_all
     render :text => 'success'
   end
 
+   # GET admin/posts/search
   def search
     @posts = Post.where('name LIKE ?', '%'+params[:request]+'%')
     @posts = @posts.where('user_id = ?', current_user) unless current_user.role == 'admin'
@@ -88,11 +90,13 @@ class Admin::AdminPostsController < InheritedResources::Base
     end
   end
 
+  # GET admin/posts/selector
   def selector
     @posts = Post.order("id DESC")
     @posts = @posts.where('user_id = ?', current_user) unless current_user.role == 'admin'
     @posts = @posts.where("status = ?", params[:status]) if params[:status] != 'all'
     @posts = @posts.where("branch_id = ?", params[:branch]) if  params[:branch] != 'all'
+
     render :layout => false
   end
 
