@@ -9,13 +9,8 @@ class Admin::AdminPostsController < InheritedResources::Base
   end
 
   def show
-    @menu_post_create = true
-    @post = Post.find(params[:id])
-    @date = @post.created_at
-    @blocks = @post.blocks.order(:degree)
-    @branches = Branch.order(:degree)
-    @branches = @branches.delete_if{|x| !current_user.access_branches.include?(x.id)} if current_user.role == 'editor'
-    @sections = @post.branch.sections.order(:degree)
+    post = Post.find(params[:id])
+    @post_presenter = ::Admin::PostPresenter(post)
   end
 
   def refresh

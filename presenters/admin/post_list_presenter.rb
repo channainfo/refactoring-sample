@@ -33,12 +33,7 @@ module Admin
 
 
     def branches
-      return @branches unless @branches.nil?
-
-      @branches = Branch.order('degree')
-     
-      @branches = @branches.delete_if{|x| !@options[:user].access_branches.include?(x.id)}  if @options[:user].role == 'editor'
-      @branches
+      @branches = Branch.with_user(@options[:user])
     end
   end
 end
