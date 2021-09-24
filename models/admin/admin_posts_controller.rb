@@ -5,17 +5,7 @@ class Admin::AdminPostsController < InheritedResources::Base
   load_and_authorize_resource
 
   def index
-    @posts = Post.order("created_at DESC")
-    @posts = @posts.where('user_id = ?', current_user) unless current_user.role == 'admin'
-    @posts = @posts.paginate(:page => params[:page], :per_page => 20)
-    @posts_categories = []
-    @posts.each do |post|
-      if get_categories.include?(post.category)
-        @posts_categories << post.category
-      end
-    end
-    @branches = Branch.order('degree')
-    @branches = @branches.delete_if{|x| !current_user.access_branches.include?(x.id)} if current_user.role == 'editor'
+    @post_list = ::Admin::PostListPresenter(user: current_user, page: params[:page])
   end
 
   def show
@@ -121,8 +111,8 @@ class Admin::AdminPostsController < InheritedResources::Base
     render :layout => false
   end
   
-  def get_categories
-    Category.visible.all
-  end
+  # def get_categories
+  #   Category.visible.all
+  # end
 
 end
