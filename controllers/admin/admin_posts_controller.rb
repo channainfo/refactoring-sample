@@ -37,14 +37,11 @@ class Admin::AdminPostsController < InheritedResources::Base
   end
 
   def update
-    @post = Post.find(params[:id])
-    @post.update_attributes(params[:post].merge(:created_at => "#{params[:date_year]}-#{params[:date_month]}-#{params[:date_day]} #{params[:date_hour]}:#{params[:date_minute]}:00"))
-    if params[:text]
-      params[:text].each do |itm|
-        Blocktext.find(itm[0]).update_attributes( :text => itm[1] )
-      end
-    end
-    @errors = @post.errors.full_messages
+    @post_updater = PostUpdater.call(update_params)
+
+    # can be just @post_updater.post.errors.full_messages
+    @errors = @post_updater.post.errors.full_messages
+    
     respond_to do |format|
       format.html { redirect_to :back }
       format.js
@@ -100,6 +97,16 @@ class Admin::AdminPostsController < InheritedResources::Base
     @posts = @posts.where("status = ?", params[:status]) if params[:status] != 'all'
     @posts = @posts.where("branch_id = ?", params[:branch]) if  params[:branch] != 'all'
     render :layout => false
+  end
+
+  private
+
+  def update_params
+    # should add whitelisted params in the permit
+    filter_params = params.require[:post].permit!
+
+    created_at = Time.zone.local(params[:date_year], params[:date_month], params[:date_day], params[:date_hour], params[:date_minute], 0)
+    filter_params.merge(created_at: created_at, id: params[:id])
   end
   
   # def get_categories
