@@ -11,26 +11,8 @@ class PostController < ApplicationController
   end
 
   def index
-    @posts = Post.active.include(:author)
-    @posts_categories = []
-    @posts.each do |post|
-      if get_categories.include?(post.category)
-        @posts_categories << post.category
-      end
-    end
-    if params[:before_date]
-      @posts = Post.active.where("created_at > ?", params[:before_date])
-    end
-    if params[:q]
-      @q = Posts.active.include(:author).ransack(params[:q])
-      @posts = @q.result
-    end
-    @posts = @posts.page(params[:page]).per(20)
-    if @posts.count == 0
-      redirect_to blog_index_path
-    end
-
-    render :index
+    post_list = PostListPresenter.new(params)
+    redirect_to blog_index_path if post_list.exist? 
   end
 
   def breaking_news
@@ -55,10 +37,6 @@ class PostController < ApplicationController
 
   def post_params
     params[:post].permit!
-  end
-
-  def get_categories
-    Category.visible.all
   end
 
   private
