@@ -19,11 +19,8 @@ class Admin::AdminPostsController < InheritedResources::Base
   end
 
   def new
-    @post = Post.new
-    @menu_post_create = true
-    @branches = Branch.order(:degree)
-    @branches = @branches.delete_if{|x| !current_user.access_branches.include?(x.id)} if current_user.role == 'editor'
-    @sections = @branches.first.sections.order(:degree)
+    post = Post.new
+    @post_presenter = ::Admin::PostPresenter(post)
   end
 
   def create
