@@ -21,12 +21,13 @@ class PostController < ApplicationController
 
   def update
     redirect_to posts_path if !current_user.admin?
-
     @post = Post.active.find(params[:id])
 
+
     if @post.update(post_params)
-      redirection_to :index
+      redirection_to :index, notice: 'Update successfully'
     else
+      flash.now[:error] = "Failed to update"
       render :update
     end
   end
@@ -35,8 +36,10 @@ class PostController < ApplicationController
     @post = Post.active.find(params[:id])
   end
 
+  # it should whitelist the params for example: user_id is dangerous and bad client might send the wrong user_id
   def post_params
-    params[:post].permit!
+    filters = params.require(:post).permit!
+    filters[:user_id] = current_user.id
   end
 
   private
