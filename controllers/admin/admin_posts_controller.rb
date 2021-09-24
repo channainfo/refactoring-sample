@@ -5,12 +5,12 @@ class Admin::AdminPostsController < InheritedResources::Base
   load_and_authorize_resource
 
   def index
-    @post_list = ::Admin::PostListPresenter(user: current_user, page: params[:page])
+    @post_list = ::Admin::PostListPresenter.new(user: current_user, page: params[:page])
   end
 
   def show
     post = Post.find(params[:id])
-    @post_presenter = ::Admin::PostPresenter(post)
+    @post_presenter = ::Admin::PostPresenter.new(post)
   end
 
   def refresh
@@ -20,19 +20,18 @@ class Admin::AdminPostsController < InheritedResources::Base
 
   def new
     post = Post.new
-    @post_presenter = ::Admin::PostPresenter(post)
+    @post_presenter = ::Admin::PostPresenter.new(post)
   end
 
   def create
-    @post = Post.new(params[:post].merge(user_id: current_user.id))
-    @menu_post_create = true
-    @branches = Branch.order(:degree)
-    @branches = @branches.delete_if{|x| !current_user.access_branches.include?(x.id)} if current_user.role == 'editor'
-    @sections = Branch.find(params[:post][:branch_id]).sections.order(:degree)
-    if @post.save
-      expire_page controller: 'static', action: 'index' if @post.status == 'published'
-      redirect_to admin_post_path(@post)
+    post = Post.new(params[:post].merge(user_id: current_user.id))
+    if post.save
+      expire_page controller: 'static', action: 'index' if post.status == 'published'
+
+      redirect_to admin_post_path(post), notice: 'Post created successfully'
     else
+      flash.now[:error] = "Failed to create post"
+      @post_presenter =  ::Admin::PostPresenter.new(post)
       render 'new'
     end
   end
